@@ -6,16 +6,18 @@ public class Main {
     static int answer = 0;
     static int N,M;
     static int[][] graph;
-    static String[] info;
-    static List<int[]> safeAreaTarget = new ArrayList<>();
+    static List<int[]> targetList = new ArrayList<>();
     static int[] arr;
-    static int[] visited;
-    static int[] result;
-    static int[] dx = {0,0,-1,1};
-    static int[] dy = {-1,1,0,0};
-    static LinkedList<int[]> queue;
+    static int[] used;
+    static int[] result = new int[3];
+    static int[][] fakeGraph;
+    static int[][] visited;
+    static String[] info;
+    static int[] dx = {-1,1,0,0};
+    static int[] dy = {0,0,-1,1};
+    static Queue<int[]> queue;
 
-    public static void main(String[]args) throws IOException {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         info = br.readLine().split(" ");
         N = Integer.parseInt(info[0]);
@@ -27,80 +29,85 @@ public class Main {
             for(int j=0; j<M; j++) {
                 graph[i][j] = Integer.parseInt(info[j]);
                 if(graph[i][j] == 0) {
-                    safeAreaTarget.add(new int[]{i,j});
+                    targetList.add(new int[]{i,j});
                 }
             }
         }
 
-        arr = new int[safeAreaTarget.size()];
-        visited = new int[safeAreaTarget.size()];
-        result = new int[3];
+        arr = new int[targetList.size()];
+        used = new int[targetList.size()];
         for(int i=0; i<arr.length; i++) {
             arr[i] = i;
         }
-        dfs(0,0);
+
+        combination(0, 0);
         System.out.println(answer);
     }
 
-    static void simulation(int[][] graph, int[][] visited) {
+    static void combination(int depth, int start) {
+        if(depth == 3) {
+            simulation();
+            return;
+        }
+        for(int i=start; i<arr.length; i++) {
+            if(used[i] == 0) {
+                used[i] = 1;
+                result[depth] = arr[i];
+                combination(depth+1, i+1);
+                used[i] = 0;
+            }
+        }
+    }
+
+    static void simulation() {
+        makeFakeGraph();
+        visited = new int[N][M];
         queue = new LinkedList<>();
+
+        for(int i=0; i<3; i++) {
+            int[] target = targetList.get(result[i]);
+            fakeGraph[target[0]][target[1]] = 1;
+        }
+
         for(int i=0; i<N; i++) {
             for(int j=0; j<M; j++) {
-                if(graph[i][j] == 2) {
+                if(fakeGraph[i][j] == 2 && visited[i][j]==0) {
+                    visited[i][j] = 1;
                     queue.offer(new int[]{i,j});
                 }
             }
         }
+
         while(!queue.isEmpty()) {
-            int[] virus = queue.poll();
+            int[] current = queue.poll();
             for(int i=0; i<4; i++) {
-                int nx = virus[0] + dx[i];
-                int ny = virus[1] + dy[i];
-                if(0<=nx && nx<N && 0<=ny && ny<M && visited[nx][ny]==0 && graph[nx][ny]!=1) {
+                int nx = current[0] + dx[i];
+                int ny = current[1] + dy[i];
+                if(0<=nx && nx<N && 0<=ny && ny<M && fakeGraph[nx][ny]==0 && visited[nx][ny]==0) {
                     visited[nx][ny] = 1;
-                    graph[nx][ny] = 2;
+                    fakeGraph[nx][ny] = 2;
                     queue.offer(new int[]{nx,ny});
                 }
             }
         }
-        checkSafeArea(graph);
+
+        updateAnswer();
     }
 
-    static void dfs(int depth, int start) {
-        if(depth == 3) {
-            int[][] copyGraph = copyGraph(graph);
-            for(int i=0; i<3; i++) {
-                int[] wall = safeAreaTarget.get(result[i]);
-                copyGraph[wall[0]][wall[1]] = 1;
-            }
-            simulation(copyGraph, new int[N][M]);
-            return;
-        }
-        for(int i=start; i<arr.length; i++) {
-            if(visited[i] == 0) {
-                visited[i] = 1;
-                result[depth] = arr[i];
-                dfs(depth+1, i+1);
-                visited[i] = 0;
-            }
-        }
-    }
-
-    static int[][] copyGraph(int[][] graph) {
-        int[][] copyGraph = new int[N][M];
+    static void makeFakeGraph() {
+        fakeGraph = new int[N][M];
         for(int i=0; i<N; i++) {
             for(int j=0; j<M; j++) {
-                copyGraph[i][j] = graph[i][j];
+                fakeGraph[i][j] = graph[i][j];
             }
         }
-        return copyGraph;
     }
 
-    static void checkSafeArea(int[][] targetGraph) {
+    static void updateAnswer() {
         int count = 0;
         for(int i=0; i<N; i++) {
             for(int j=0; j<M; j++) {
-                if(targetGraph[i][j] == 0) {
+                if(fakeGraph[i][j] == 0) {
                     count+=1;
                 }
             }
