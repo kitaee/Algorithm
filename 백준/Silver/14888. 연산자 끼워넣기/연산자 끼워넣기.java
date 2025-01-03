@@ -3,44 +3,49 @@ import java.util.*;
 
 public class Main {
 
-    static int MAX = Integer.MIN_VALUE;
-    static int MIN = Integer.MAX_VALUE;
+    static int max = Integer.MIN_VALUE;
+    static int min = Integer.MAX_VALUE;
     static int N;
-    static String[] info;
-    static int[] nums;
-    static int[] operations = new int[4];
+    static int[] arr;
+    static int[] operations;
 
-    public static void main(String[]args) throws IOException {
+    public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         N = Integer.parseInt(br.readLine());
-        nums = new int[N];
-        info = br.readLine().split(" ");
+        arr = new int[N];
+        operations = new int[4];
+
+        String[] info = br.readLine().split(" ");
         for(int i=0; i<N; i++) {
-            nums[i] = Integer.parseInt(info[i]);
+            arr[i] = Integer.parseInt(info[i]);
         }
         info = br.readLine().split(" ");
         for(int i=0; i<4; i++) {
             operations[i] = Integer.parseInt(info[i]);
         }
-        dfs(nums[0], 1);
-        System.out.println(MAX);
-        System.out.println(MIN);
+
+        permutation(1, arr[0]);
+        System.out.println(max);
+        System.out.println(min);
     }
 
-    static void dfs(int num, int index) {
-        if(index == N) {
-            MAX = Math.max(MAX, num);
-            MIN = Math.min(MIN, num);
+    static void permutation(int depth, int temp) {
+        if(depth == N) {
+            max = Math.max(max, temp);
+            min = Math.min(min, temp);
             return;
         }
         for(int i=0; i<4; i++) {
-            if(operations[i] > 0) {
+            if(operations[i]>0) {
                 operations[i]-=1;
-                switch (i) {
-                    case 0: dfs(num + nums[index], index+1); break;
-                    case 1: dfs(num - nums[index], index+1); break;
-                    case 2: dfs(num * nums[index], index+1); break;
-                    case 3: dfs(num / nums[index], index+1); break;
+                if(i == 0) {
+                    permutation(depth+1, temp+arr[depth]);
+                } else if(i == 1) {
+                    permutation(depth+1, temp-arr[depth]);
+                } else if(i == 2) {
+                    permutation(depth+1, temp*arr[depth]);
+                } else {
+                    permutation(depth+1, temp/arr[depth]);
                 }
                 operations[i]+=1;
             }
