@@ -10,8 +10,9 @@ public class Main {
         String[] info = br.readLine().split(" ");
         N = Integer.parseInt(info[0]);
         M = Integer.parseInt(info[1]);
-        parent = new int[N];
-        for(int i=0; i<N; i++) {
+
+        parent = new int[N+1];
+        for(int i=1; i<N+1; i++) {
             parent[i] = i;
         }
 
@@ -19,8 +20,7 @@ public class Main {
             info = br.readLine().split(" ");
             int v1 = Integer.parseInt(info[0]);
             int v2 = Integer.parseInt(info[1]);
-
-            if(findParent(parent[v1]) == findParent(parent[v2])) {
+            if(findParent(v1) == findParent(v2)) {
                 System.out.println(i+1);
                 return;
             }
